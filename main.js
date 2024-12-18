@@ -47,26 +47,22 @@ colorTexture.colorSpace = THREE.SRGBColorSpace;
 // colorTexture.minFilter = THREE.NearestFilter;
 colorTexture.generateMipmaps = false;
 colorTexture.magFilter = THREE.NearestFilter;
-const alphaTexture = textureLoader.load("static/textures/door/alpha.jpg");
-const heightTexture = textureLoader.load("static/textures/door/height.jpg");
-const normalTexture = textureLoader.load("static/textures/door/normal.jpg");
+const alphaTexture = textureLoader.load("textures/door/alpha.jpg");
+const heightTexture = textureLoader.load("textures/door/height.jpg");
+const normalTexture = textureLoader.load("textures/door/normal.jpg");
 const ambientOcclusionTexture = textureLoader.load(
-  "static/textures/door/ambientOcclusion.jpg"
+  "textures/door/ambientOcclusion.jpg"
 );
-const metalnessTexture = textureLoader.load(
-  "static/textures/door/metalness.jpg"
-);
-const roughnessTexture = textureLoader.load(
-  "static/textures/door/roughness.jpg"
-);
-const matcapTexture = textureLoader.load("static/textures/matcaps/6.png");
-const gradientTexture = textureLoader.load("static/textures/gradients/3.jpg");
+const metalnessTexture = textureLoader.load("textures/door/metalness.jpg");
+const roughnessTexture = textureLoader.load("textures/door/roughness.jpg");
+const matcapTexture = textureLoader.load("textures/matcaps/6.png");
+const gradientTexture = textureLoader.load("textures/gradients/3.jpg");
 
 /**
  * Environment map
  */
 const rgbeLoader = new RGBELoader();
-rgbeLoader.load("static/textures/environmentMap/2k.hdr", (environmentMap) => {
+rgbeLoader.load("textures/environmentMap/2k.hdr", (environmentMap) => {
   environmentMap.mapping = THREE.EquirectangularReflectionMapping;
 
   scene.background = environmentMap;
@@ -75,7 +71,7 @@ rgbeLoader.load("static/textures/environmentMap/2k.hdr", (environmentMap) => {
 
 // Text Loader
 const fontLoader = new FontLoader();
-fontLoader.load("static/fonts/helvetiker_regular.typeface.json", (font) => {
+fontLoader.load("fonts/helvetiker_regular.typeface.json", (font) => {
   const textGeometry = new TextGeometry("Cailyn is dumb", {
     font: font,
     size: 0.5,
