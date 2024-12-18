@@ -13,12 +13,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "vite-plugin-restart": "^0.4.2"
   },
   "dependencies": {
     "gsap": "^3.12.5",
     "lil-gui": "^0.20.0",
-    "three": "^0.171.0",
-    "vite-plugin-restart": "^0.4.2"
+    "three": "^0.171.0"
   }
 }
