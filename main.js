@@ -38,7 +38,7 @@ loadingManager.onError = () => {
   console.log("loading error");
 };
 
-const colorTexture = textureLoader.load("static/textures/door/color.jpg");
+const colorTexture = textureLoader.load("textures/door/color.jpg");
 colorTexture.colorSpace = THREE.SRGBColorSpace;
 // colorTexture.repeat.x = 2;
 // colorTexture.repeat.y = 3;

@@ -17,6 +17,7 @@
     "vite-plugin-restart": "^0.4.2"
   },
   "dependencies": {
+    "@11labs/client": "^0.0.4",
     "gsap": "^3.12.5",
     "lil-gui": "^0.20.0",
     "three": "^0.171.0"
