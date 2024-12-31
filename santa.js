@@ -50,58 +50,6 @@ gltfLoader.load("/models/santa_final.glb", (gltf) => {
 });
 
 /**
- * Fonts
- */
-const matcapTexture = textureLoader.load("textures/matcaps/8.png");
-matcapTexture.colorSpace = THREE.SRGBColorSpace;
-const fontLoader = new FontLoader();
-
-fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
-  const textGeometry = new TextGeometry("click on Santa", {
-    font: font,
-    size: 0.8,
-    depth: 0.5,
-    curveSegments: 12,
-    bevelEnabled: true,
-    bevelThickness: 0.1,
-    bevelSize: 0.02,
-    bevelOffset: 0,
-    bevelSegments: 5,
-  });
-  textGeometry.center();
-  // const textMaterial = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
-  const textMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, // Base color
-    transmission: 0, // Fully transparent (glass effect)
-    transparent: true,
-    opacity: 1.0, // Ensure object is visible
-    roughness: 0.65, // Higher roughness for frosted look
-    metalness: 0, // Non-metallic
-    ior: 1.45, // Typical for glass
-    thickness: 1.0, // Increase for stronger refraction
-    clearcoat: 1.0, // Glossy outer surface
-    clearcoatRoughness: 0.1, // Slightly smoother top layer
-  });
-
-  const text = new THREE.Mesh(textGeometry, textMaterial);
-  // Apply Santa's rotation and position
-  text.rotation.y = 135 * (Math.PI / 180); // Same rotation as Santa
-  text.position.set(0, 1, 0); // Adjust height and position to float near Santa
-  text.scale.set(-0.5, 0.5, 0.5); // Optional scaling for size adjustment
-
-  // Offset text to hover above Santa's head
-  text.position.y += 6; // Adjust height if necessary
-  // scene.add(text);
-
-  // Animation to gently float the label
-  const animateLabel = () => {
-    text.position.y = 2 + Math.sin(Date.now() * 0.005) * 0.2;
-    requestAnimationFrame(animateLabel);
-  };
-  animateLabel();
-});
-
-/**
  * Earth
  */
 
@@ -321,11 +269,23 @@ async function handleSantaClick() {
       // Start the conversation
       conversation = await Conversation.startSession({
         agentId: "hMTCDsoP83RCODflU5fZ", // Replace with your agent ID
-        onMessage: (message) => {
-          console.log("Agent says:", message.text);
-          alert(`Agent says: ${message.text}`); // Display the message
-        },
         onConnect: () => console.log("Connected to ElevenLabs agent"),
+        onMessage: (message) => {
+          console.log("Received message:", message);
+          // Directly extract and update text without parsing
+          if (
+            message &&
+            message.source === "ai" &&
+            typeof message.message === "string"
+          ) {
+            updateSantaText(message.message); // Direct string update
+          } else if (message && message.source === "user") {
+            console.log("User message received:", message.message);
+            // Handle user messages separately or just acknowledge them
+          } else {
+            console.warn("Unexpected message format:", message);
+          }
+        },
         onDisconnect: () => console.log("Disconnected from agent"),
         onError: (error) => console.error("Conversation error:", error),
       });
@@ -341,7 +301,145 @@ async function handleSantaClick() {
     }
   }
 }
+const fontLoader = new FontLoader();
+fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
+  const textGeometry = new TextGeometry("Ho ho ho, happy new year!", {
+    font: font,
+    size: 0.8,
+    depth: 0.1,
+    curveSegments: 12,
+    bevelEnabled: true,
+    bevelThickness: 0.1,
+    bevelSize: 0.02,
+    bevelOffset: 0,
+    bevelSegments: 5,
+  });
+  textGeometry.center();
+  // const textMaterial = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
+  const textMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, // Base color
+    transmission: 0, // Fully transparent (glass effect)
+    transparent: true,
+    opacity: 1.0, // Ensure object is visible
+    roughness: 0.65, // Higher roughness for frosted look
+    metalness: 0, // Non-metallic
+    ior: 1.45, // Typical for glass
+    thickness: 1.0, // Increase for stronger refraction
+    clearcoat: 1.0, // Glossy outer surface
+    clearcoatRoughness: 0.1, // Slightly smoother top layer
+  });
 
+  const text = new THREE.Mesh(textGeometry, textMaterial);
+  // Apply Santa's rotation and position
+  // Face the camera (reset rotation to avoid tilting)
+  text.rotation.y = (135 * Math.PI) / 180;
+  text.rotation.x = 0; // No X-axis tilt
+
+  // Position the text behind Santa and Earth
+  text.position.set(-4, 0, 4); // Lower and push back along Z-axis
+
+  // Scale the text uniformly (no negative scaling)
+  text.scale.set(-0.5, 0.5, 0.5); // Enlarge while keeping proportions
+  // scene.add(text);
+
+  // Animation to gently float the label
+  const animateLabel = () => {
+    text.position.y = 0.8 + Math.sin(Date.now() * 0.005) * 0.1;
+    requestAnimationFrame(animateLabel);
+  };
+  animateLabel();
+});
+/**
+ * Fonts
+ */
+const matcapTexture = textureLoader.load("textures/matcaps/8.png");
+matcapTexture.colorSpace = THREE.SRGBColorSpace;
+let currentTextMesh = null; // Store the current text mesh
+
+// Update Text Function
+function updateSantaText(newText) {
+  // if (!santaTextMesh) return;
+  // Remove previous text mesh if it exists
+  if (currentTextMesh) {
+    // Iterate through each mesh in the group
+    currentTextMesh.children.forEach((child) => {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach((mat) => mat.dispose());
+        } else {
+          child.material.dispose();
+        }
+      }
+    });
+
+    // Remove the group from the scene
+    scene.remove(currentTextMesh);
+    currentTextMesh = null; // Reset reference
+    console.log("Successfully disposed of text mesh.");
+  }
+  fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
+    const lines = newText.split(","); // Split text by line breaks
+    console.log(lines);
+    const textGroup = new THREE.Group(); // Group to contain all text lines
+    lines.forEach((line, index) => {
+      const newGeometry = new TextGeometry(line, {
+        font: font,
+        size: 0.8,
+        depth: 0.1,
+        curveSegments: 12,
+        bevelEnabled: true,
+        bevelThickness: 0.1,
+        bevelSize: 0.02,
+        bevelOffset: 0,
+        bevelSegments: 5,
+      });
+      newGeometry.center();
+
+      const textMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff, // Base color
+        transmission: 0, // Fully transparent (glass effect)
+        transparent: true,
+        opacity: 1.0, // Ensure object is visible
+        roughness: 0.65, // Higher roughness for frosted look
+        metalness: 0, // Non-metallic
+        ior: 1.45, // Typical for glass
+        thickness: 1.0, // Increase for stronger refraction
+        clearcoat: 1.0, // Glossy outer surface
+        clearcoatRoughness: 0.1, // Slightly smoother top layer
+      });
+
+      const textLineMesh = new THREE.Mesh(newGeometry, textMaterial);
+      // Apply Santa's rotation and position
+      textLineMesh.rotation.y = 135 * (Math.PI / 180); // Same rotation as Santa
+      textLineMesh.rotation.x = 0; // No X-axis tilt
+
+      // Position the text behind Santa and Earth
+      textLineMesh.position.set(-4, 0, 4); // Lower and push back along Z-axis
+      textLineMesh.position.y -= index * 0.8;
+      // Scale the text uniformly (no negative scaling)
+      textLineMesh.scale.set(-0.5, 0.5, 0.5); // Enlarge while keeping proportions
+      textGroup.add(textLineMesh);
+    });
+
+    // Offset text to hover above Santa's head
+    textGroup.position.y += 2;
+    scene.add(textGroup);
+    currentTextMesh = textGroup;
+
+    // Animation to gently float the label
+    const animateLabel = () => {
+      if (currentTextMesh) {
+        currentTextMesh.children.forEach((child, index) => {
+          child.position.y = 2 - index * 1 + Math.sin(Date.now() * 0.005) * 0.2;
+        });
+        requestAnimationFrame(animateLabel);
+      }
+    };
+    // santaTextMesh.geometry.dispose(); // Dispose of old geometry
+    // santaTextMesh.geometry = newGeometry; // Replace with new one
+  });
+}
 /**
  * Sizes
  */
